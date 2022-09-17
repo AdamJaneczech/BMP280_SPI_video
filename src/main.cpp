@@ -8,7 +8,7 @@
 void setup() {
   Serial.begin(115200);
 
-  //nastavit CS pi jako výstup
+  //nastavit CS pin jako výstup
   pinMode(CS, OUTPUT);
   digitalWrite(CS, HIGH);
   //inicializace komunikace SPI
@@ -21,21 +21,16 @@ void setup() {
   SPI.setClockDivider(SPI_CLOCK_DIV16);
   //nastavení samplování senzoru
   digitalWrite(CS, LOW);
-  //registr "id" - kontrola funkčnosti čipu
+  //registr "id" - kontrola funkčnosti čipu; pomocí OR ( | ) odesíláme požadavek na čtení z registru
   SPI.transfer(0xD0 | 0x80);
+  //pro přenos dat zpět je nutný signál na CLK - odesíláme "prázdný" byte
   uint8_t recv_test = (uint8_t)SPI.transfer(0xff);
+  //po ukončení komunikace nastavíme CS pin na stav 1 (HIGH)
   digitalWrite(CS, HIGH);
+  //ověříme správnost přijetého ID vytištěním hodnoty přes sériovou linku
   Serial.println(recv_test, HEX);
 
   while(1);
-
-  digitalWrite(CS, LOW);
-  //adresa "ctrl_meas" registru - datasheet str. 25
-  SPI.transfer(B01110100);
-  //nastavit temperature oversampling (7:5); nastavit pressure oversampling (4:2); nastavit power mode (1:0) - datasheet str. 25
-  SPI.transfer((1 << 7) |(1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0));
-
-  digitalWrite(CS, HIGH);
 }
 
 void loop() {
